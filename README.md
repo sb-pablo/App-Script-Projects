@@ -1,5 +1,7 @@
 # App-Script-Projects
 
+This Script parses through a list of companies and compares them to an existing account list. It then populates a new tab in the Google Sheet with any matches it finds. 
+
 A couple of things to note. 
 
 1. Make sure that the columns match. From left to right it should be "rep_accounts, LAST NAME, FIRST NAME, company_names, GITHUB HANDLE, JOB TITLE, COUNTRY, TICKET TYPE, ATTENDEE TYPE, REGISTERED DATE""
