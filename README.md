@@ -11,13 +11,12 @@ A couple of things to note.
 
 How to use this. 
 
-1. Go to Google Sheets 
-2. Make a copy of my current sheet and use that copy for steps 3-10. (https://docs.google.com/spreadsheets/d/1pb1FooEDZ9zqdZ6FhfgEf9-rXUNpXJPGz3n1FCJjX_Y/edit?usp=sharing)
-3. Click on extensions
-4. Click on App Script
-5. Accept the T&C's if you haven't already
-6. Paste the "Code.gs" file into the files section
-7. Click the Save icon.
-8. Refresh your google sheet.
-9. Click on the Custom Menu tab
-10. Select Match and Copy Rows.
+1. Make a copy of my current sheet and use that copy for steps 3-10. (https://docs.google.com/spreadsheets/d/1pb1FooEDZ9zqdZ6FhfgEf9-rXUNpXJPGz3n1FCJjX_Y/edit?usp=sharing)
+2. Click on extensions
+3. Click on App Script
+4. Accept the T&C's if you haven't already
+5. Paste the "Code.gs" file into the files section
+6. Click the Save icon.
+7. Refresh your google sheet.
+8. Click on the Custom Menu tab
+9. Select Match and Copy Rows.
