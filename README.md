@@ -12,7 +12,7 @@ A couple of things to note.
 How to use this. 
 
 1. Go to Google Sheets
-2. Open the copy of my existing sheet
+2. Open the copy of my existing sheet (https://docs.google.com/spreadsheets/d/1pb1FooEDZ9zqdZ6FhfgEf9-rXUNpXJPGz3n1FCJjX_Y/edit?usp=sharing)
 3. Click on extensions
 4. Click on App Script
 5. Accept the T&C's if you haven't already
