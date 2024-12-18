@@ -108,6 +108,150 @@ function searchAccounts() {
   updateSearchSheet(matchingLeads, accountOwner);
 }
 
+// Modified onEdit trigger
+function onEdit(e) {
+  // Check if edit was in Search sheet B3 for original functionality
+  if (e.range.getA1Notation() === 'B3' && e.source.getActiveSheet().getName() === 'Search') {
+    searchAccounts();
+    return;
+  }
+  
+  // Check if edit was in SortList sheet A3 (checkbox)
+  if (e.range.getA1Notation() === 'A3' && e.source.getActiveSheet().getName() === 'SortList') {
+    try {
+      const isChecked = e.value === 'TRUE';
+      handleSortListCheckbox(isChecked);
+    } catch (error) {
+      Logger.log('Error in onEdit: ' + error.toString());
+    }
+  }
+}
+
+// Modified handleSortListCheckbox function
+function handleSortListCheckbox(isChecked) {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  
+  if (isChecked) {
+    // Save current state and reorganize
+    try {
+      saveOriginalState(sheet);
+      reorganizeColumns(sheet);
+    } catch (error) {
+      Logger.log('Error when checking: ' + error.toString());
+    }
+  } else {
+    // Restore original state
+    try {
+      restoreOriginalState(sheet);
+    } catch (error) {
+      Logger.log('Error when unchecking: ' + error.toString());
+    }
+  }
+}
+
+// Modified saveOriginalState function
+function saveOriginalState(sheet) {
+  const lastColumn = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+  
+  // Check if there's data to save
+  if (lastColumn < 3 || lastRow < 1) return;
+  
+  const range = sheet.getRange(1, 3, lastRow, lastColumn - 2);
+  const values = range.getValues();
+  
+  // Save as a cache using PropertiesService
+  PropertiesService.getScriptProperties().setProperties({
+    'originalData': JSON.stringify(values),
+    'lastColumn': lastColumn.toString(),
+    'lastRow': lastRow.toString()
+  });
+}
+
+// Modified reorganizeColumns function
+function reorganizeColumns(sheet) {
+  const lastColumn = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+  
+  // Check if there's data to process
+  if (lastColumn < 3 || lastRow < 1) return;
+  
+  const values = sheet.getRange(1, 3, lastRow, lastColumn - 2).getValues();
+  const headers = values[0];
+  const data = values.slice(1);
+  
+  // Define desired header order
+  const desiredHeaders = ['Email', 'Last Name', 'First Name', 'Company', 'Job Title', 'Country', 'State'];
+  
+  // Create mapping of current indices to desired indices
+  const headerMap = new Map();
+  headers.forEach((header, index) => {
+    const desiredIndex = desiredHeaders.findIndex(
+      h => h.toLowerCase() === header.toString().toLowerCase()
+    );
+    if (desiredIndex !== -1) {
+      headerMap.set(desiredIndex, index);
+    }
+  });
+  
+  // Create new arrays for reorganized data
+  const newHeaders = [];
+  const newData = Array(data.length).fill().map(() => []);
+  
+  // Populate new arrays in desired order
+  desiredHeaders.forEach((header, desiredIndex) => {
+    const currentIndex = headerMap.get(desiredIndex);
+    if (currentIndex !== undefined) {
+      newHeaders.push(headers[currentIndex]);
+      data.forEach((row, rowIndex) => {
+        newData[rowIndex].push(row[currentIndex]);
+      });
+    }
+  });
+  
+  // Clear the existing content
+  if (lastRow > 1) {
+    sheet.getRange(1, 3, lastRow, lastColumn - 2).clearContent();
+  }
+  
+  // Write the reorganized data if we have any
+  if (newHeaders.length > 0) {
+    sheet.getRange(1, 3, 1, newHeaders.length).setValues([newHeaders]);
+    if (newData.length > 0) {
+      sheet.getRange(2, 3, newData.length, newHeaders.length).setValues(newData);
+    }
+  }
+}
+
+// Modified restoreOriginalState function
+function restoreOriginalState(sheet) {
+  const props = PropertiesService.getScriptProperties();
+  const originalDataStr = props.getProperty('originalData');
+  const lastColumn = parseInt(props.getProperty('lastColumn'));
+  const lastRow = parseInt(props.getProperty('lastRow'));
+  
+  // Check if we have data to restore
+  if (!originalDataStr || !lastColumn || !lastRow) return;
+  
+  try {
+    const originalData = JSON.parse(originalDataStr);
+    
+    // Clear existing content
+    const currentLastRow = Math.max(sheet.getLastRow(), lastRow);
+    const currentLastCol = Math.max(sheet.getLastColumn(), lastColumn);
+    if (currentLastRow > 1 && currentLastCol > 2) {
+      sheet.getRange(1, 3, currentLastRow, currentLastCol - 2).clearContent();
+    }
+    
+    // Restore the original data
+    if (originalData.length > 0) {
+      sheet.getRange(1, 3, originalData.length, originalData[0].length).setValues(originalData);
+    }
+  } catch (error) {
+    Logger.log('Error restoring data: ' + error.toString());
+  }
+}
+
 // Optional: Add trigger to run search when B3 changes
 function createOnEditTrigger() {
   const ss = SpreadsheetApp.getActive();
@@ -115,10 +259,4 @@ function createOnEditTrigger() {
     .forSpreadsheet(ss)
     .onEdit()
     .create();
-}
-
-function onEdit(e) {
-  if (e.range.getA1Notation() === 'B3' && e.source.getActiveSheet().getName() === 'Search') {
-    searchAccounts();
-  }
 }
